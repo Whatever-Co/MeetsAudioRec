@@ -268,6 +268,49 @@ struct ContentView: View {
             .cornerRadius(8)
             .padding(.horizontal, 20)
 
+            // Output Directory Group
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Image(systemName: "folder.fill")
+                        .foregroundColor(.secondary)
+                        .frame(width: 20)
+                    Text("Output Folder")
+                        .font(.headline)
+                }
+
+                // Folder path
+                HStack {
+                    Image(systemName: "folder")
+                        .foregroundColor(.secondary)
+                    Text(recordingState.outputDirectory.path)
+                        .font(.caption)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+                .padding(8)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(6)
+
+                // Action buttons
+                HStack(spacing: 8) {
+                    Button(action: selectFolder) {
+                        Label("Choose Folder", systemImage: "folder.badge.plus")
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button(action: { NSWorkspace.shared.open(recordingState.outputDirectory) }) {
+                        Label("Open in Finder", systemImage: "arrow.up.forward.app")
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+            .padding(12)
+            .background(Color.gray.opacity(0.05))
+            .cornerRadius(8)
+            .padding(.horizontal, 20)
+
             // Record button
             Button(action: toggleRecording) {
                 HStack {
@@ -281,21 +324,6 @@ struct ContentView: View {
             .tint(audioCaptureManager.isRecording ? .red : .accentColor)
             .padding(.horizontal, 20)
             .padding(.top, 8)
-
-            Divider()
-                .padding(.horizontal, 20)
-
-            // Output folder
-            HStack {
-                Text(recordingState.outputDirectory.lastPathComponent)
-                    .lineLimit(1)
-                    .foregroundColor(.secondary)
-                Spacer()
-                Button("Choose...") { selectFolder() }
-                Button("Open") { NSWorkspace.shared.open(recordingState.outputDirectory) }
-            }
-            .font(.caption)
-            .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
     }
