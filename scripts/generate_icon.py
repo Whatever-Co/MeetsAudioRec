@@ -27,11 +27,13 @@ def create_icon(size: int = 1024) -> NSImage:
     ctx = NSGraphicsContext.currentContext()
     ctx.setShouldAntialias_(True)
 
-    # White rounded rect background (Apple standard)
-    icon_size = size
+    # macOS standard: 832x832 icon within 1024x1024 canvas (96px margin each side)
+    # This matches Apple's icon template safe zone
+    icon_size = size * 0.8125  # 832/1024 = 0.8125
+    margin = (size - icon_size) / 2  # 96px at 1024 canvas
     corner_radius = icon_size * 0.22
 
-    bg_rect = NSMakeRect(0, 0, icon_size, icon_size)
+    bg_rect = NSMakeRect(margin, margin, icon_size, icon_size)
     bg_path = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
         bg_rect, corner_radius, corner_radius
     )
@@ -50,8 +52,10 @@ def create_icon(size: int = 1024) -> NSImage:
     )
 
     if symbol_image:
+        # Symbol size proportional to background (52% of 832 = ~42% of 1024)
+        symbol_point_size = icon_size * 0.52
         size_config = NSImageSymbolConfiguration.configurationWithPointSize_weight_(
-            size * 0.52, NSFontWeightHeavy
+            symbol_point_size, NSFontWeightHeavy
         )
 
         dark_gray = NSColor.colorWithCalibratedRed_green_blue_alpha_(
@@ -69,8 +73,9 @@ def create_icon(size: int = 1024) -> NSImage:
             symbol_image = configured_symbol
 
         symbol_size = symbol_image.size()
-        x = (size - symbol_size.width) / 2
-        y = (size - symbol_size.height) / 2
+        # Center symbol within the background rect, not the full canvas
+        x = margin + (icon_size - symbol_size.width) / 2
+        y = margin + (icon_size - symbol_size.height) / 2
 
         symbol_image.drawAtPoint_fromRect_operation_fraction_(
             NSPoint(x, y),
