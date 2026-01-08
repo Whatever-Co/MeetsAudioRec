@@ -19,6 +19,8 @@ class MicrophoneCapture: NSObject {
 
     private var isCapturing = false
     private var selectedDeviceUID: String?
+private var hasReportedUnsupportedFormat = false
+
 
     let outputFormat: AVAudioFormat
 
@@ -102,6 +104,8 @@ class MicrophoneCapture: NSObject {
         session.startRunning()
 
         isCapturing = true
+hasReportedUnsupportedFormat = false
+
 
         logger.info("Microphone capture started successfully with AVCaptureSession")
     }
@@ -296,8 +300,55 @@ extension MicrophoneCapture: AVCaptureAudioDataOutputSampleBufferDelegate {
                         }
                     }
                 }
+            } else if isSignedInt && bitsPerChannel == 24 {
+                // Int24 (packed) - convert to Float32
+                let scale: Float = 1.0 / 8388608.0 // 2^23
+                for i in 0..<ablPtr.count {
+                    let audioBuffer = ablPtr[i]
+                    if let data = audioBuffer.mData {
+                        let srcBytes = data.assumingMemoryBound(to: UInt8.self)
+                        let channelIndex = isNonInterleaved ? i : 0
+                        let samplesToProcess = Int(audioBuffer.mDataByteSize) / 3
+
+                        if isNonInterleaved {
+                            for frame in 0..<min(frameCount, samplesToProcess) {
+                                let byteOffset = frame * 3
+                                // Little-endian 24-bit to Int32
+                                var value: Int32 = Int32(srcBytes[byteOffset])
+                                value |= Int32(srcBytes[byteOffset + 1]) << 8
+                                value |= Int32(srcBytes[byteOffset + 2]) << 16
+                                // Sign extend
+                                if value & 0x800000 != 0 {
+                                    value |= Int32(bitPattern: 0xFF000000)
+                                }
+                                floatData[channelIndex][frame] = Float(value) * scale
+                            }
+                        } else {
+                            let framesInBuffer = samplesToProcess / Int(channelCount)
+                            for frame in 0..<framesInBuffer {
+                                for ch in 0..<Int(channelCount) {
+                                    let byteOffset = (frame * Int(channelCount) + ch) * 3
+                                    var value: Int32 = Int32(srcBytes[byteOffset])
+                                    value |= Int32(srcBytes[byteOffset + 1]) << 8
+                                    value |= Int32(srcBytes[byteOffset + 2]) << 16
+                                    if value & 0x800000 != 0 {
+                                        value |= Int32(bitPattern: 0xFF000000)
+                                    }
+                                    floatData[ch][frame] = Float(value) * scale
+                                }
+                            }
+                        }
+                    }
+                }
             } else {
-                // Unsupported format
+                // Unsupported format - report error once per session
+                if !hasReportedUnsupportedFormat {
+                    hasReportedUnsupportedFormat = true
+                    let formatDesc = "bitsPerChannel=\(bitsPerChannel), isFloat=\(isFloat), isSignedInt=\(isSignedInt)"
+                    logger.error("Unsupported microphone audio format: \(formatDesc)")
+                    let error = AudioCaptureError.audioEngineError("Unsupported audio format: \(formatDesc)")
+                    delegate?.microphoneCapture(self, didEncounterError: error)
+                }
                 return
             }
         }

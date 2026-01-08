@@ -153,24 +153,26 @@ private class AudioStreamOutput: NSObject, SCStreamOutput {
         guard let sourceData = dataPointer else { return nil }
 
         // Copy data to audio buffer
-        if let floatChannelData = audioBuffer.floatChannelData {
-            let channelCount = Int(audioFormat.channelCount)
-            let bytesPerFrame = Int(audioFormat.streamDescription.pointee.mBytesPerFrame)
+        guard let floatChannelData = audioBuffer.floatChannelData else {
+            // Non-float format from ScreenCaptureKit is unexpected
+            return nil
+        }
 
-            if audioFormat.isInterleaved {
-                // Interleaved format - deinterleave
-                let sourceFloatData = UnsafeRawPointer(sourceData).bindMemory(to: Float.self, capacity: frameCount * channelCount)
-                for frame in 0..<frameCount {
-                    for channel in 0..<channelCount {
-                        floatChannelData[channel][frame] = sourceFloatData[frame * channelCount + channel]
-                    }
-                }
-            } else {
-                // Non-interleaved - copy directly
-                let bytesPerChannel = frameCount * MemoryLayout<Float>.size
+        let channelCount = Int(audioFormat.channelCount)
+
+        if audioFormat.isInterleaved {
+            // Interleaved format - deinterleave
+            let sourceFloatData = UnsafeRawPointer(sourceData).bindMemory(to: Float.self, capacity: frameCount * channelCount)
+            for frame in 0..<frameCount {
                 for channel in 0..<channelCount {
-                    memcpy(floatChannelData[channel], sourceData.advanced(by: channel * bytesPerChannel), bytesPerChannel)
+                    floatChannelData[channel][frame] = sourceFloatData[frame * channelCount + channel]
                 }
+            }
+        } else {
+            // Non-interleaved - copy directly
+            let bytesPerChannel = frameCount * MemoryLayout<Float>.size
+            for channel in 0..<channelCount {
+                memcpy(floatChannelData[channel], sourceData.advanced(by: channel * bytesPerChannel), bytesPerChannel)
             }
         }
 

@@ -69,14 +69,17 @@ class AudioCaptureManager: ObservableObject {
         }
     }
 
-    func requestPermissions() async {
-        let systemPermission = await SystemAudioCapture.checkPermission()
+    func requestMicrophonePermission() async {
         let micPermission = await MicrophoneCapture.requestPermission()
-
         await MainActor.run {
-            self.hasSystemAudioPermission = systemPermission
             self.hasMicrophonePermission = micPermission
         }
+    }
+
+    func requestSystemAudioPermission() {
+        // System audio permission can only be requested by opening System Settings
+        // CGRequestScreenCaptureAccess() opens the settings pane
+        SystemAudioCapture.requestPermission()
     }
 
     func getAvailableMicrophones() -> [AudioDevice] {
@@ -96,13 +99,27 @@ class AudioCaptureManager: ObservableObject {
 
         recordingTask = Task {
             do {
+                // Check permissions before starting
                 if micEnabled {
-                    let micPermission = MicrophoneCapture.checkPermission()
+                    var micPermission = MicrophoneCapture.checkPermission()
                     if !micPermission {
-                        let granted = await MicrophoneCapture.requestPermission()
+                        micPermission = await MicrophoneCapture.requestPermission()
                         await MainActor.run {
-                            self.hasMicrophonePermission = granted
+                            self.hasMicrophonePermission = micPermission
                         }
+                    }
+                    if !micPermission {
+                        throw AudioCaptureError.permissionDenied
+                    }
+                }
+
+                if systemEnabled {
+                    let hasSystemPermission = await SystemAudioCapture.checkPermission()
+                    await MainActor.run {
+                        self.hasSystemAudioPermission = hasSystemPermission
+                    }
+                    if !hasSystemPermission {
+                        throw AudioCaptureError.permissionDenied
                     }
                 }
 
@@ -115,10 +132,7 @@ class AudioCaptureManager: ObservableObject {
                 }
 
                 if systemEnabled {
-                    let hasSystemPermission = await SystemAudioCapture.checkPermission()
-                    if hasSystemPermission {
-                        try await systemCapture.startCapture()
-                    }
+                    try await systemCapture.startCapture()
                 }
 
                 await MainActor.run {
@@ -127,6 +141,11 @@ class AudioCaptureManager: ObservableObject {
                 }
             } catch {
                 logger.error("Recording error: \(error.localizedDescription)")
+                // Clean up if partially started
+                mixer.stopRecording()
+                microphoneCapture.stopCapture()
+                await systemCapture.stopCapture()
+
                 await MainActor.run {
                     self.onError?(error)
                 }

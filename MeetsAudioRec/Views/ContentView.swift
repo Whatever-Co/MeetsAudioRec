@@ -3,9 +3,32 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var recordingState: RecordingState
     @EnvironmentObject var audioCaptureManager: AudioCaptureManager
+    @State private var showingError = false
 
     var body: some View {
         VStack(spacing: 20) {
+            // Error banner
+            if let errorMessage = recordingState.errorMessage {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.yellow)
+                    Text(errorMessage)
+                        .font(.caption)
+                        .lineLimit(2)
+                    Spacer()
+                    Button {
+                        recordingState.errorMessage = nil
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(8)
+                .background(Color.red.opacity(0.1))
+                .cornerRadius(6)
+            }
+
             // Header
             HStack {
                 Image(systemName: audioCaptureManager.isRecording ? "record.circle.fill" : "waveform.circle.fill")
