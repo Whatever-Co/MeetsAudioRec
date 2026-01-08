@@ -40,7 +40,7 @@ struct ContentView: View {
                 mainRecordingView
             }
         }
-        .frame(width: 400)
+        .frame(width: 360)
         .onAppear {
             loadMicrophones()
             setupCallbacks()

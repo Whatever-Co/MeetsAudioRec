@@ -17,5 +17,6 @@ struct MeetsAudioRecApp: App {
                 .environmentObject(recordingState)
                 .environmentObject(audioCaptureManager)
         }
+        .windowResizability(.contentSize)
     }
 }
