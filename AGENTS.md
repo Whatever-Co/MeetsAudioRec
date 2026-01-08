@@ -15,11 +15,56 @@ MeetsAudioRec is a macOS app for recording system audio + microphone simultaneou
 open build/DerivedData/Build/Products/Debug/MeetsAudioRec.app
 ```
 
-## Release
+## Release Procedure
+
+### 1. Update Version (if needed)
+Edit `project.yml`:
+```yaml
+MARKETING_VERSION: "X.Y.Z"
+CURRENT_PROJECT_VERSION: "N"
+```
+Then regenerate: `xcodegen generate`
+
+### 2. Build Notarized DMG
 ```bash
-# Create notarized DMG (requires notarytool-profile in Keychain)
 ./scripts/package_dmg.sh
 # Output: build/MeetsAudioRec.dmg
+```
+
+### 3. Create Tag & GitHub Release
+```bash
+# Create and push tag
+git tag vX.Y.Z
+git push origin vX.Y.Z
+
+# Create GitHub release with DMG
+gh release create vX.Y.Z build/MeetsAudioRec.dmg \
+  --title "vX.Y.Z" \
+  --notes "$(cat <<'EOF'
+## MeetsAudioRec vX.Y.Z
+
+### Changes
+- Feature/fix description here
+
+### Requirements
+- macOS 13.0 (Ventura) or later
+- Screen Recording permission
+- Microphone permission
+EOF
+)"
+```
+
+### Release Notes Format
+```markdown
+## MeetsAudioRec vX.Y.Z
+
+### Changes
+- Bullet points of changes
+
+### Requirements
+- macOS 13.0 (Ventura) or later
+- Screen Recording permission
+- Microphone permission
 ```
 
 ## Project Structure
