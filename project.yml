@@ -26,7 +26,7 @@ targets:
         CODE_SIGN_ENTITLEMENTS: MeetsAudioRec/MeetsAudioRec.entitlements
         ENABLE_HARDENED_RUNTIME: YES
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: G5G54TCH8W
     entitlements:
       path: MeetsAudioRec/MeetsAudioRec.entitlements
       properties:
