@@ -24,8 +24,10 @@ find "$APP_PATH" -type f -name "*.dylib" -o -name "*.framework" | while read -r 
   codesign --force --options runtime --timestamp --sign "$DEVELOPER_ID" "$item" 2>/dev/null || true
 done
 
-# Sign the main app bundle
-codesign --force --options runtime --timestamp --sign "$DEVELOPER_ID" "$APP_PATH"
+# Sign the main app bundle with entitlements
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ENTITLEMENTS_PATH="${SCRIPT_DIR}/../MeetsAudioRec/MeetsAudioRec.entitlements"
+codesign --force --options runtime --timestamp --entitlements "$ENTITLEMENTS_PATH" --sign "$DEVELOPER_ID" "$APP_PATH"
 
 # Verify signature
 codesign --verify --verbose "$APP_PATH"

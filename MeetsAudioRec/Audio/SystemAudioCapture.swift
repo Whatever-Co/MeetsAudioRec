@@ -1,6 +1,7 @@
+import AppKit
+import AVFoundation
 import Foundation
 import ScreenCaptureKit
-import AVFoundation
 
 protocol SystemAudioCaptureDelegate: AnyObject {
     func systemAudioCapture(_ capture: SystemAudioCapture, didReceiveAudioBuffer buffer: AVAudioPCMBuffer)
@@ -94,8 +95,10 @@ class SystemAudioCapture: NSObject {
     }
 
     static func requestPermission() {
-        // This will prompt user if not already granted
-        CGRequestScreenCaptureAccess()
+        // Open System Settings directly to Screen Recording pane
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") {
+            NSWorkspace.shared.open(url)
+        }
     }
 }
 
