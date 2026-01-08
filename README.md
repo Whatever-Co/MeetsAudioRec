@@ -1,6 +1,6 @@
 # MeetsAudioRec
 
-macOS menu bar application that records system audio and microphone input simultaneously, mixed into a single M4A file.
+macOS application that records system audio and microphone input simultaneously, mixed into a single M4A file.
 
 ## Features
 
@@ -66,7 +66,7 @@ xcrun notarytool store-credentials "notarytool-profile" \
 
 ## Usage
 
-1. Launch the app (appears in menu bar)
+1. Launch the app
 2. Grant required permissions when prompted
 3. Select your microphone device from the dropdown
 4. Adjust volume sliders and enable/disable sources as needed
