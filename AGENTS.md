@@ -123,5 +123,9 @@ scripts/
 
 ## Entitlements Required
 - `com.apple.security.device.audio-input` - Microphone access
-- `com.apple.security.app-sandbox` - Sandbox enabled
+- `com.apple.security.app-sandbox` - Set to `false` (sandbox disabled for ScreenCaptureKit)
 - Screen Recording permission (granted via System Settings, not entitlement)
+
+## Code Signing Notes
+- `notarize.sh` must include `--entitlements` flag when signing
+- Without entitlements, microphone permission dialogs won't appear in distributed builds
