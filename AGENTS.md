@@ -5,11 +5,21 @@ MeetsAudioRec is a macOS app for recording system audio + microphone simultaneou
 
 ## Build & Run
 ```bash
-# Build
-xcodebuild -scheme MeetsAudioRec -configuration Debug build
+# Build (Debug)
+./scripts/build.sh
+
+# Build (Release)
+./scripts/build.sh Release
 
 # Run (after build)
-open ~/Library/Developer/Xcode/DerivedData/MeetsAudioRec-*/Build/Products/Debug/MeetsAudioRec.app
+open build/DerivedData/Build/Products/Debug/MeetsAudioRec.app
+```
+
+## Release
+```bash
+# Create notarized DMG (requires notarytool-profile in Keychain)
+./scripts/package_dmg.sh
+# Output: build/MeetsAudioRec.dmg
 ```
 
 ## Project Structure
@@ -25,6 +35,12 @@ MeetsAudioRec/
 ├── Views/
 │   └── ContentView.swift          # Main UI
 └── MeetsAudioRecApp.swift         # App entry point
+
+scripts/
+├── build.sh          # Build Debug/Release
+├── notarize.sh       # Sign and notarize app
+├── package_dmg.sh    # Create notarized DMG
+└── generate_icon.py  # Generate app icon
 ```
 
 ## Key Technical Details

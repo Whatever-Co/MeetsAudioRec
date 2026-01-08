@@ -41,6 +41,29 @@ xcodegen generate
 2. Select your development team in Signing & Capabilities
 3. Build and run (⌘R)
 
+### Build for Distribution
+
+```bash
+# Development build
+./scripts/build.sh
+
+# Release build
+./scripts/build.sh Release
+
+# Create notarized DMG (requires Apple Developer account)
+./scripts/package_dmg.sh
+```
+
+#### First-time Setup for Notarization
+
+Store your Apple credentials in Keychain:
+
+```bash
+xcrun notarytool store-credentials "notarytool-profile" \
+  --apple-id YOUR_APPLE_ID@example.com \
+  --team-id YOUR_TEAM_ID
+```
+
 ## Usage
 
 1. Launch the app (appears in menu bar)
