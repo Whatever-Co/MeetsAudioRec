@@ -10,6 +10,7 @@
 		4A1D99801C871B1924130123 /* SystemAudioCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8908A5D2B031E78CFD7B76AB /* SystemAudioCapture.swift */; };
 		6C13B39F8AF3AA5ADA8D1D74 /* RecordingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6557CD547CE7C122A10C8AE1 /* RecordingState.swift */; };
 		6E9CD2A6C6C785A6D252FED6 /* MicrophoneCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7631BED9A313D5AEFC4A276E /* MicrophoneCapture.swift */; };
+		A1B2C3D4E5F6789012345678 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F1E2D3C4B5A6978012345678 /* Assets.xcassets */; };
 		BE4A383231F2E00DA1F767AD /* AudioMixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9E196F1402092A1D7283D7C /* AudioMixer.swift */; };
 		C0326B4746D931C00969615B /* MeetsAudioRecApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4892C6BB510CFE0C8E187FC0 /* MeetsAudioRecApp.swift */; };
 		C319B95E3E452D1A2EA68309 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A2412B74650EA5F3B2C868E /* ContentView.swift */; };
@@ -19,6 +20,7 @@
 /* Begin PBXFileReference section */
 		0514C6A3B47ED06CC4821E53 /* MeetsAudioRec.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeetsAudioRec.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		11583179D3B5973A643747B0 /* AudioCaptureManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureManager.swift; sourceTree = "<group>"; };
+		F1E2D3C4B5A6978012345678 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4892C6BB510CFE0C8E187FC0 /* MeetsAudioRecApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetsAudioRecApp.swift; sourceTree = "<group>"; };
 		6557CD547CE7C122A10C8AE1 /* RecordingState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingState.swift; sourceTree = "<group>"; };
 		7631BED9A313D5AEFC4A276E /* MicrophoneCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicrophoneCapture.swift; sourceTree = "<group>"; };
@@ -33,6 +35,7 @@
 		13009ECBE1F8B3CD9DA2CB23 /* MeetsAudioRec */ = {
 			isa = PBXGroup;
 			children = (
+				F1E2D3C4B5A6978012345678 /* Assets.xcassets */,
 				E1935C03177281AEAA40710A /* Info.plist */,
 				882F9D9642E33D4F5AB376DB /* MeetsAudioRec.entitlements */,
 				4892C6BB510CFE0C8E187FC0 /* MeetsAudioRecApp.swift */,
@@ -94,6 +97,7 @@
 			buildConfigurationList = 372465CD969F370669B2CF74 /* Build configuration list for PBXNativeTarget "MeetsAudioRec" */;
 			buildPhases = (
 				441780059C28B58E007A763A /* Sources */,
+				D1E2F3A4B5C6978012345678 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -139,6 +143,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D1E2F3A4B5C6978012345678 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1B2C3D4E5F6789012345678 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		441780059C28B58E007A763A /* Sources */ = {
@@ -230,7 +245,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.saqoosha.MeetsAudioRec;
+				PRODUCT_BUNDLE_IDENTIFIER = co.whatever.MeetsAudioRec;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -314,7 +329,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.saqoosha.MeetsAudioRec;
+				PRODUCT_BUNDLE_IDENTIFIER = co.whatever.MeetsAudioRec;
 				SDKROOT = macosx;
 			};
 			name = Release;

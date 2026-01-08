@@ -1,6 +1,6 @@
 name: MeetsAudioRec
 options:
-  bundleIdPrefix: com.saqoosha
+  bundleIdPrefix: co.whatever
   deploymentTarget:
     macOS: "13.0"
   xcodeVersion: "15.0"
@@ -21,7 +21,7 @@ targets:
       - MeetsAudioRec
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.saqoosha.MeetsAudioRec
+        PRODUCT_BUNDLE_IDENTIFIER: co.whatever.MeetsAudioRec
         INFOPLIST_FILE: MeetsAudioRec/Info.plist
         CODE_SIGN_ENTITLEMENTS: MeetsAudioRec/MeetsAudioRec.entitlements
         ENABLE_HARDENED_RUNTIME: YES
