@@ -6,7 +6,7 @@ struct ContentView: View {
     @State private var showingError = false
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
             // Error banner
             if let errorMessage = recordingState.errorMessage {
                 HStack {
@@ -27,12 +27,109 @@ struct ContentView: View {
                 .padding(8)
                 .background(Color.red.opacity(0.1))
                 .cornerRadius(6)
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
             }
 
+            // Show different UI based on permission state
+            if !audioCaptureManager.hasSystemAudioPermission {
+                systemAudioPermissionView
+            } else if !audioCaptureManager.hasMicrophonePermission {
+                microphonePermissionView
+            } else {
+                mainRecordingView
+            }
+        }
+        .frame(width: 400)
+        .onAppear {
+            loadMicrophones()
+            setupCallbacks()
+        }
+    }
+
+    // MARK: - System Audio Permission View
+    private var systemAudioPermissionView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            // Icon
+            Image(systemName: "speaker.wave.2.fill")
+                .font(.system(size: 60))
+                .foregroundColor(.accentColor)
+
+            // Title
+            Text("System Audio Recording")
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            // Description
+            Text("MeetsAudioRec needs permission to record system audio. Please enable Screen Recording in System Settings.")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 30)
+
+            // Open Settings button
+            Button(action: openSystemSettings) {
+                Text("Open System Settings")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .padding(.horizontal, 40)
+            .padding(.top, 8)
+
+            Spacer()
+        }
+        .padding(.vertical, 40)
+    }
+
+    // MARK: - Microphone Permission View
+    private var microphonePermissionView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            // Icon
+            Image(systemName: "mic.fill")
+                .font(.system(size: 60))
+                .foregroundColor(.accentColor)
+
+            // Title
+            Text("Microphone Access")
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            // Description
+            Text("To record audio from your microphone, please grant microphone access.")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 30)
+
+            // Request permission button
+            Button(action: requestMicrophonePermission) {
+                Text("Allow Microphone Access")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .padding(.horizontal, 40)
+            .padding(.top, 8)
+
+            Spacer()
+        }
+        .padding(.vertical, 40)
+    }
+
+    // MARK: - Main Recording View
+    private var mainRecordingView: some View {
+        VStack(spacing: 20) {
             // Header
             HStack {
                 Image(systemName: audioCaptureManager.isRecording ? "record.circle.fill" : "waveform.circle.fill")
-                    .font(.title)
+                    .font(.title2)
                     .foregroundColor(audioCaptureManager.isRecording ? .red : .accentColor)
 
                 Text("MeetsAudioRec")
@@ -46,30 +143,46 @@ struct ContentView: View {
                         .foregroundColor(.red)
                 }
             }
+            .padding(.top, 20)
+            .padding(.horizontal, 20)
 
-            Divider()
-
-            // Status
-            HStack(spacing: 20) {
-                StatusBadge(label: "System", isReady: audioCaptureManager.hasSystemAudioPermission)
-                StatusBadge(label: "Mic", isReady: audioCaptureManager.hasMicrophonePermission)
-            }
-
-            // Level Meters
-            VStack(spacing: 8) {
-                SimpleLevelMeter(label: "System", level: audioCaptureManager.systemAudioLevel, color: .blue)
-                SimpleLevelMeter(label: "Mic", level: audioCaptureManager.microphoneLevel, color: .orange)
-                SimpleLevelMeter(label: "Mix", level: audioCaptureManager.mixedLevel, color: .green)
-            }
-            .padding()
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(8)
-
-            // Volume sliders
-            VStack(spacing: 12) {
+            // System Audio Group
+            VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("System")
-                        .frame(width: 60, alignment: .leading)
+                    Image(systemName: "speaker.wave.2.fill")
+                        .foregroundColor(.blue)
+                        .frame(width: 20)
+                    Text("System Audio")
+                        .font(.headline)
+                    Spacer()
+                    Toggle(isOn: $recordingState.systemAudioEnabled) {
+                        Text("")
+                    }
+                    .toggleStyle(.switch)
+                    .onChange(of: recordingState.systemAudioEnabled) { newValue in
+                        audioCaptureManager.updateEnabledSources(
+                            system: newValue,
+                            microphone: recordingState.microphoneEnabled
+                        )
+                    }
+                    .help(recordingState.systemAudioEnabled ? "System audio is enabled" : "System audio is muted")
+                }
+
+                // Level meter
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.2))
+                        Rectangle()
+                            .fill(Color.blue)
+                            .frame(width: geo.size.width * CGFloat(audioCaptureManager.systemAudioLevel))
+                    }
+                }
+                .frame(height: 8)
+                .cornerRadius(4)
+
+                // Volume slider
+                HStack {
                     Slider(value: $recordingState.systemVolume, in: 0...2)
                         .onChange(of: recordingState.systemVolume) { newValue in
                             audioCaptureManager.updateVolumes(
@@ -77,13 +190,56 @@ struct ContentView: View {
                                 microphone: recordingState.microphoneVolume
                             )
                         }
+                        .disabled(!recordingState.systemAudioEnabled)
+
                     Text("\(Int(recordingState.systemVolume * 100))%")
-                        .frame(width: 45)
+                        .frame(width: 50, alignment: .trailing)
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(recordingState.systemAudioEnabled ? .primary : .secondary)
+                }
+            }
+            .padding(12)
+            .background(Color.gray.opacity(0.05))
+            .cornerRadius(8)
+            .padding(.horizontal, 20)
+
+            // Microphone Group
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Image(systemName: "mic.fill")
+                        .foregroundColor(.orange)
+                        .frame(width: 20)
+                    Text("Microphone")
+                        .font(.headline)
+                    Spacer()
+                    Toggle(isOn: $recordingState.microphoneEnabled) {
+                        Text("")
+                    }
+                    .toggleStyle(.switch)
+                    .onChange(of: recordingState.microphoneEnabled) { newValue in
+                        audioCaptureManager.updateEnabledSources(
+                            system: recordingState.systemAudioEnabled,
+                            microphone: newValue
+                        )
+                    }
+                    .help(recordingState.microphoneEnabled ? "Microphone is enabled" : "Microphone is muted")
                 }
 
+                // Level meter
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.2))
+                        Rectangle()
+                            .fill(Color.orange)
+                            .frame(width: geo.size.width * CGFloat(audioCaptureManager.microphoneLevel))
+                    }
+                }
+                .frame(height: 8)
+                .cornerRadius(4)
+
+                // Volume slider
                 HStack {
-                    Text("Mic")
-                        .frame(width: 60, alignment: .leading)
                     Slider(value: $recordingState.microphoneVolume, in: 0...2)
                         .onChange(of: recordingState.microphoneVolume) { newValue in
                             audioCaptureManager.updateVolumes(
@@ -91,65 +247,67 @@ struct ContentView: View {
                                 microphone: newValue
                             )
                         }
+                        .disabled(!recordingState.microphoneEnabled)
+
                     Text("\(Int(recordingState.microphoneVolume * 100))%")
-                        .frame(width: 45)
+                        .frame(width: 50, alignment: .trailing)
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundColor(recordingState.microphoneEnabled ? .primary : .secondary)
+                }
+
+                // Device picker
+                Picker("Input Device", selection: $recordingState.selectedMicrophoneID) {
+                    Text("Default").tag(nil as String?)
+                    ForEach(recordingState.availableMicrophones) { device in
+                        Text(device.name).tag(device.id as String?)
+                    }
                 }
             }
-
-            // Toggles
-            HStack(spacing: 20) {
-                Toggle("System", isOn: $recordingState.systemAudioEnabled)
-                    .onChange(of: recordingState.systemAudioEnabled) { newValue in
-                        audioCaptureManager.updateEnabledSources(
-                            system: newValue,
-                            microphone: recordingState.microphoneEnabled
-                        )
-                    }
-                Toggle("Mic", isOn: $recordingState.microphoneEnabled)
-                    .onChange(of: recordingState.microphoneEnabled) { newValue in
-                        audioCaptureManager.updateEnabledSources(
-                            system: recordingState.systemAudioEnabled,
-                            microphone: newValue
-                        )
-                    }
-            }
-            .toggleStyle(.checkbox)
-
-            // Microphone picker
-            Picker("Input Device", selection: $recordingState.selectedMicrophoneID) {
-                Text("Default").tag(nil as String?)
-                ForEach(recordingState.availableMicrophones) { device in
-                    Text(device.name).tag(device.id as String?)
-                }
-            }
+            .padding(12)
+            .background(Color.gray.opacity(0.05))
+            .cornerRadius(8)
+            .padding(.horizontal, 20)
 
             // Record button
             Button(action: toggleRecording) {
                 HStack {
                     Image(systemName: audioCaptureManager.isRecording ? "stop.fill" : "record.circle")
-                    Text(audioCaptureManager.isRecording ? "Stop" : "Record")
+                    Text(audioCaptureManager.isRecording ? "Stop Recording" : "Start Recording")
                 }
                 .frame(maxWidth: .infinity)
-                .padding()
             }
             .buttonStyle(.borderedProminent)
+            .controlSize(.large)
             .tint(audioCaptureManager.isRecording ? .red : .accentColor)
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+
+            Divider()
+                .padding(.horizontal, 20)
 
             // Output folder
             HStack {
                 Text(recordingState.outputDirectory.lastPathComponent)
                     .lineLimit(1)
+                    .foregroundColor(.secondary)
                 Spacer()
                 Button("Choose...") { selectFolder() }
                 Button("Open") { NSWorkspace.shared.open(recordingState.outputDirectory) }
             }
             .font(.caption)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
         }
-        .padding(20)
-        .frame(width: 350)
-        .onAppear {
-            loadMicrophones()
-            setupCallbacks()
+    }
+
+    // MARK: - Actions
+    private func openSystemSettings() {
+        audioCaptureManager.requestSystemAudioPermission()
+    }
+
+    private func requestMicrophonePermission() {
+        Task {
+            await audioCaptureManager.requestMicrophonePermission()
         }
     }
 
@@ -208,47 +366,3 @@ struct ContentView: View {
     }
 }
 
-struct StatusBadge: View {
-    let label: String
-    let isReady: Bool
-
-    var body: some View {
-        HStack(spacing: 4) {
-            Circle()
-                .fill(isReady ? Color.green : Color.red)
-                .frame(width: 8, height: 8)
-            Text(label)
-                .font(.caption)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(4)
-    }
-}
-
-struct SimpleLevelMeter: View {
-    let label: String
-    let level: Float
-    let color: Color
-
-    var body: some View {
-        HStack {
-            Text(label)
-                .font(.caption)
-                .frame(width: 50, alignment: .leading)
-
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.2))
-                    Rectangle()
-                        .fill(color)
-                        .frame(width: geo.size.width * CGFloat(level))
-                }
-            }
-            .frame(height: 6)
-            .cornerRadius(3)
-        }
-    }
-}
