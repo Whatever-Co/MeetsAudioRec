@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
-"""Generate app icon for MeetsAudioRec using SF Symbols"""
+"""Generate app icon for MeetsAudioRec using SF Symbols
 
+Usage:
+  python generate_icon.py              # Generate full icon with background
+  python generate_icon.py --foreground # Generate foreground layer only (for Icon Composer)
+"""
+
+import argparse
 from pathlib import Path
 
 from AppKit import (
@@ -148,8 +154,14 @@ def create_squircle_path(x: float, y: float, width: float, height: float) -> NSB
     return path
 
 
-def create_icon(size: int = 1024) -> NSImage:
-    """Create the app icon using SF Symbols mic.fill"""
+def create_icon(size: int = 1024, foreground_only: bool = False) -> NSImage:
+    """Create the app icon using SF Symbols mic.fill
+
+    Args:
+        size: Canvas size in pixels
+        foreground_only: If True, output only the mic symbol with transparent background
+                         (for use with Icon Composer / macOS 26 Liquid Glass)
+    """
     image = NSImage.alloc().initWithSize_(NSSize(size, size))
     image.lockFocus()
 
@@ -161,15 +173,16 @@ def create_icon(size: int = 1024) -> NSImage:
     icon_size = size * 0.8125  # 832/1024 = 0.8125
     margin = (size - icon_size) / 2  # 96px at 1024 canvas
 
-    # Use proper Apple squircle (continuous curvature) instead of simple rounded rect
-    bg_path = create_squircle_path(margin, margin, icon_size, icon_size)
+    if not foreground_only:
+        # Use proper Apple squircle (continuous curvature) instead of simple rounded rect
+        bg_path = create_squircle_path(margin, margin, icon_size, icon_size)
 
-    # Top gradient overlay for subtle 3D effect
-    top_gradient = NSGradient.alloc().initWithStartingColor_endingColor_(
-        NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 1.0),
-        NSColor.colorWithCalibratedRed_green_blue_alpha_(0.95, 0.95, 0.95, 1.0),
-    )
-    top_gradient.drawInBezierPath_angle_(bg_path, 90)
+        # Top gradient overlay for subtle 3D effect
+        top_gradient = NSGradient.alloc().initWithStartingColor_endingColor_(
+            NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 1.0),
+            NSColor.colorWithCalibratedRed_green_blue_alpha_(0.95, 0.95, 0.95, 1.0),
+        )
+        top_gradient.drawInBezierPath_angle_(bg_path, 90)
 
     # SF Symbol: mic.fill
     symbol_name = "mic.fill"
@@ -238,25 +251,51 @@ def save_png(image: NSImage, path: Path, size: int):
 
 
 def main():
-    output_dir = (
-        Path(__file__).parent.parent
-        / "MeetsAudioRec"
-        / "Assets.xcassets"
-        / "AppIcon.appiconset"
+    parser = argparse.ArgumentParser(
+        description="Generate app icon for MeetsAudioRec"
     )
-    output_dir.mkdir(parents=True, exist_ok=True)
+    parser.add_argument(
+        "--foreground",
+        action="store_true",
+        help="Generate foreground layer only (transparent background, for Icon Composer)",
+    )
+    args = parser.parse_args()
 
-    print("Creating icon with SF Symbol 'mic.fill'...")
-    icon = create_icon(1024)
+    project_root = Path(__file__).parent.parent
 
-    sizes = [16, 32, 64, 128, 256, 512, 1024]
+    if args.foreground:
+        # Output foreground layer for Icon Composer (macOS 26 Liquid Glass)
+        output_dir = project_root / "build"
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-    print("\nGenerating PNG icons...")
-    for size in sizes:
-        output_path = output_dir / f"appicon_{size}.png"
-        save_png(icon, output_path, size)
+        print("Creating foreground layer (mic symbol only) for Icon Composer...")
+        icon = create_icon(1024, foreground_only=True)
 
-    print("\nAll icons generated successfully!")
+        output_path = output_dir / "appicon_foreground.png"
+        save_png(icon, output_path, 1024)
+
+        print(f"\nForeground layer saved to: {output_path}")
+        print("\nNext steps:")
+        print("  1. Open Icon Composer (Xcode > Open Developer Tool > Icon Composer)")
+        print("  2. Create new icon")
+        print(f"  3. Import {output_path} as foreground layer")
+        print("  4. Export as AppIcon.icon")
+    else:
+        # Standard icon generation
+        output_dir = project_root / "MeetsAudioRec" / "Assets.xcassets" / "AppIcon.appiconset"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        print("Creating icon with SF Symbol 'mic.fill'...")
+        icon = create_icon(1024)
+
+        sizes = [16, 32, 64, 128, 256, 512, 1024]
+
+        print("\nGenerating PNG icons...")
+        for size in sizes:
+            output_path = output_dir / f"appicon_{size}.png"
+            save_png(icon, output_path, size)
+
+        print("\nAll icons generated successfully!")
 
 
 if __name__ == "__main__":

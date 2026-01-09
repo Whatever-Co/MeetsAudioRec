@@ -18,10 +18,30 @@ targets:
     type: application
     platform: macOS
     sources:
-      - MeetsAudioRec
+      - path: MeetsAudioRec
+        excludes:
+          - "AppIcon.icon"
+    postCompileScripts:
+      - name: Compile Icon with Liquid Glass
+        script: |
+          xcrun actool "${PROJECT_DIR}/MeetsAudioRec/Assets.xcassets" "${PROJECT_DIR}/MeetsAudioRec/AppIcon.icon" \
+            --compile "${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}" \
+            --output-format human-readable-text \
+            --notices --warnings \
+            --app-icon AppIcon \
+            --include-all-app-icons \
+            --enable-on-demand-resources NO \
+            --development-region en \
+            --target-device mac \
+            --minimum-deployment-target "${MACOSX_DEPLOYMENT_TARGET}" \
+            --platform macosx \
+            --output-partial-info-plist "${TEMP_DIR}/actool_icon.plist"
+        basedOnDependencyAnalysis: false
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: co.whatever.MeetsAudioRec
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
         INFOPLIST_FILE: MeetsAudioRec/Info.plist
         CODE_SIGN_ENTITLEMENTS: MeetsAudioRec/MeetsAudioRec.entitlements
         ENABLE_HARDENED_RUNTIME: YES
