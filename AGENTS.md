@@ -17,55 +17,15 @@ open build/DerivedData/Build/Products/Debug/MeetsAudioRec.app
 
 ## Release Procedure
 
-### 1. Update Version (if needed)
-Edit `project.yml`:
-```yaml
-MARKETING_VERSION: "X.Y.Z"
-CURRENT_PROJECT_VERSION: "N"
-```
-Then regenerate: `xcodegen generate`
+See `.claude/commands/release.md` for detailed workflow, or run:
 
-### 2. Build Notarized DMG
 ```bash
-./scripts/package_dmg.sh
-# Output: build/MeetsAudioRec.dmg
+./scripts/release.sh <version>
 ```
 
-### 3. Create Tag & GitHub Release
-```bash
-# Create and push tag
-git tag vX.Y.Z
-git push origin vX.Y.Z
+## Version Control
 
-# Create GitHub release with DMG
-gh release create vX.Y.Z build/MeetsAudioRec.dmg \
-  --title "vX.Y.Z" \
-  --notes "$(cat <<'EOF'
-## MeetsAudioRec vX.Y.Z
-
-### Changes
-- Feature/fix description here
-
-### Requirements
-- macOS 13.0 (Ventura) or later
-- Screen Recording permission
-- Microphone permission
-EOF
-)"
-```
-
-### Release Notes Format
-```markdown
-## MeetsAudioRec vX.Y.Z
-
-### Changes
-- Bullet points of changes
-
-### Requirements
-- macOS 13.0 (Ventura) or later
-- Screen Recording permission
-- Microphone permission
-```
+This project uses `jj` (Jujutsu) instead of git. Use `jj` commands for all VCS operations.
 
 ## Project Structure
 ```
@@ -85,6 +45,7 @@ scripts/
 ├── build.sh          # Build Debug/Release
 ├── notarize.sh       # Sign and notarize app
 ├── package_dmg.sh    # Create notarized DMG
+├── release.sh        # Full release workflow
 └── generate_icon.py  # Generate app icon
 ```
 
