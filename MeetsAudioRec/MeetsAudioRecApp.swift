@@ -4,11 +4,11 @@ import SwiftUI
 struct MeetsAudioRecApp: App {
     @StateObject private var recordingState = RecordingState()
     @StateObject private var audioCaptureManager = AudioCaptureManager()
+    @StateObject private var zoomMuteMonitor: ZoomMuteStatusMonitor
 
     init() {
-        // Write startup log
-        let logFile = URL(fileURLWithPath: "/tmp/MeetsAudioRec_log.txt")
-        try? "App init at \(Date())\n".write(to: logFile, atomically: true, encoding: .utf8)
+        let monitor = ZoomMuteStatusMonitor()
+        _zoomMuteMonitor = StateObject(wrappedValue: monitor)
     }
 
     var body: some Scene {
@@ -16,6 +16,7 @@ struct MeetsAudioRecApp: App {
             ContentView()
                 .environmentObject(recordingState)
                 .environmentObject(audioCaptureManager)
+                .environmentObject(zoomMuteMonitor)
         }
         .windowResizability(.contentSize)
     }

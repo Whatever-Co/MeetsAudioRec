@@ -3,6 +3,8 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var recordingState: RecordingState
     @EnvironmentObject var audioCaptureManager: AudioCaptureManager
+@EnvironmentObject var zoomMuteMonitor: ZoomMuteStatusMonitor
+
     @State private var showingError = false
 
     var body: some View {
@@ -36,6 +38,8 @@ struct ContentView: View {
                 systemAudioPermissionView
             } else if !audioCaptureManager.hasMicrophonePermission {
                 microphonePermissionView
+            } else if recordingState.zoomSyncEnabled && !zoomMuteMonitor.hasAccessibilityPermission {
+                accessibilityPermissionView
             } else {
                 mainRecordingView
             }
@@ -44,6 +48,11 @@ struct ContentView: View {
         .onAppear {
             loadMicrophones()
             setupCallbacks()
+            zoomMuteMonitor.checkAccessibilityPermission()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            // Re-check accessibility permission when app becomes active (user may have granted it in System Settings)
+            zoomMuteMonitor.checkAccessibilityPermission()
         }
     }
 
@@ -117,6 +126,55 @@ struct ContentView: View {
             .controlSize(.large)
             .padding(.horizontal, 40)
             .padding(.top, 8)
+
+            Spacer()
+        }
+        .padding(.vertical, 40)
+    }
+
+    // MARK: - Accessibility Permission View
+    private var accessibilityPermissionView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            // Icon
+            Image(systemName: "hand.raised.fill")
+                .font(.system(size: 60))
+                .foregroundColor(.accentColor)
+
+            // Title
+            Text("Accessibility Access")
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            // Description
+            Text("Zoom Sync requires Accessibility access to read Zoom's mute status. Please grant access in System Settings.")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 30)
+
+            // Request permission button
+            Button(action: {
+                zoomMuteMonitor.requestAccessibilityPermission()
+            }) {
+                Text("Open Accessibility Settings")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .padding(.horizontal, 40)
+            .padding(.top, 8)
+
+            // Skip button
+            Button(action: {
+                recordingState.zoomSyncEnabled = false
+            }) {
+                Text("Disable Zoom Sync")
+            }
+            .buttonStyle(.bordered)
+            .padding(.horizontal, 40)
 
             Spacer()
         }
@@ -216,11 +274,8 @@ struct ContentView: View {
                         Text("")
                     }
                     .toggleStyle(.switch)
-                    .onChange(of: recordingState.microphoneEnabled) { newValue in
-                        audioCaptureManager.updateEnabledSources(
-                            system: recordingState.systemAudioEnabled,
-                            microphone: newValue
-                        )
+                    .onChange(of: recordingState.microphoneEnabled) { _ in
+                        syncMicWithZoom()
                     }
                     .help(recordingState.microphoneEnabled ? "Microphone is enabled" : "Microphone is muted")
                 }
@@ -267,6 +322,8 @@ struct ContentView: View {
             .background(Color.gray.opacity(0.05))
             .cornerRadius(8)
             .padding(.horizontal, 20)
+
+zoomMuteStatusView
 
             // Output Directory Group
             VStack(alignment: .leading, spacing: 8) {
@@ -328,6 +385,115 @@ struct ContentView: View {
         }
     }
 
+private var zoomMuteStatusView: some View {
+  VStack(alignment: .leading, spacing: 8) {
+    HStack {
+      Image(systemName: "video.fill")
+        .foregroundColor(.purple)
+        .frame(width: 20)
+      Text("Zoom Sync")
+        .font(.headline)
+      Spacer()
+      Toggle(isOn: $recordingState.zoomSyncEnabled) {
+        Text("")
+      }
+      .toggleStyle(.switch)
+      .onChange(of: recordingState.zoomSyncEnabled) { newValue in
+        // Start/stop monitoring based on recording state
+        if audioCaptureManager.isRecording {
+          if newValue {
+            zoomMuteMonitor.startMonitoring()
+            syncMicWithZoom()
+          } else {
+            zoomMuteMonitor.stopMonitoring()
+          }
+        }
+      }
+      .help(recordingState.zoomSyncEnabled ? "Mic mute synced with Zoom" : "Mic mute not synced")
+    }
+
+    if audioCaptureManager.isRecording && recordingState.zoomSyncEnabled {
+      HStack {
+        Text("Zoom Status")
+          .foregroundColor(.secondary)
+        Spacer()
+        HStack(spacing: 4) {
+          Circle()
+            .fill(zoomStatusColor)
+            .frame(width: 8, height: 8)
+          Text(zoomMuteMonitor.statusLabel)
+            .font(.system(.body, design: .monospaced))
+        }
+      }
+
+      if zoomMuteMonitor.status == .muted {
+        Text("Mic is muted (synced with Zoom)")
+          .font(.caption)
+          .foregroundColor(.orange)
+      }
+
+      if zoomMuteMonitor.status == .noAccessibility {
+        Button(action: openAccessibilitySettings) {
+          Label("Grant Accessibility Access", systemImage: "hand.raised.fill")
+        }
+        .buttonStyle(.bordered)
+      }
+    } else if recordingState.zoomSyncEnabled && !audioCaptureManager.isRecording {
+      Text("Will sync when recording starts")
+        .font(.caption)
+        .foregroundColor(.secondary)
+    }
+  }
+  .padding(12)
+  .background(Color.gray.opacity(0.05))
+  .cornerRadius(8)
+  .padding(.horizontal, 20)
+  .onChange(of: zoomMuteMonitor.status) { _ in
+    syncMicWithZoom()
+  }
+}
+
+private var zoomStatusColor: Color {
+  switch zoomMuteMonitor.status {
+  case .muted: return .orange
+  case .unmuted: return .green
+  case .unknown: return .gray
+  case .notRunning: return .gray
+  case .noAccessibility: return .red
+  }
+}
+
+private var effectiveMicEnabled: Bool {
+  if recordingState.zoomSyncEnabled && zoomMuteMonitor.status == .muted {
+    return false
+  }
+  return recordingState.microphoneEnabled
+}
+
+private func syncMicWithZoom() {
+  guard recordingState.zoomSyncEnabled else { return }
+
+  // Actually move the mic switch based on Zoom status
+  let shouldMicBeEnabled: Bool
+  switch zoomMuteMonitor.status {
+  case .muted:
+    shouldMicBeEnabled = false
+  case .unmuted:
+    shouldMicBeEnabled = true
+  default:
+    // Don't change for unknown/notRunning/noAccessibility
+    return
+  }
+
+  if recordingState.microphoneEnabled != shouldMicBeEnabled {
+    recordingState.microphoneEnabled = shouldMicBeEnabled
+    audioCaptureManager.updateEnabledSources(
+      system: recordingState.systemAudioEnabled,
+      microphone: shouldMicBeEnabled
+    )
+  }
+}
+
     // MARK: - Actions
     private func openSystemSettings() {
         audioCaptureManager.requestSystemAudioPermission()
@@ -339,14 +505,28 @@ struct ContentView: View {
         }
     }
 
+private func openAccessibilitySettings() {
+  if let url = URL(
+    string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+  {
+    NSWorkspace.shared.open(url)
+  }
+}
+
     private func setupCallbacks() {
-        audioCaptureManager.onRecordingStarted = { [weak recordingState] url in
+        audioCaptureManager.onRecordingStarted = { [weak recordingState, weak zoomMuteMonitor] url in
             recordingState?.currentRecordingURL = url
             recordingState?.startRecordingTimer()
+            // Start Zoom sync monitoring if enabled
+            if recordingState?.zoomSyncEnabled == true {
+                zoomMuteMonitor?.startMonitoring()
+            }
         }
 
-        audioCaptureManager.onRecordingStopped = { [weak recordingState] url in
+        audioCaptureManager.onRecordingStopped = { [weak recordingState, weak zoomMuteMonitor] url in
             recordingState?.stopRecordingTimer()
+            // Stop Zoom sync monitoring
+            zoomMuteMonitor?.stopMonitoring()
             if let url = url {
                 NSWorkspace.shared.selectFile(url.path, inFileViewerRootedAtPath: "")
             }
@@ -393,4 +573,3 @@ struct ContentView: View {
         return String(format: "%02d:%02d", m, s)
     }
 }
-

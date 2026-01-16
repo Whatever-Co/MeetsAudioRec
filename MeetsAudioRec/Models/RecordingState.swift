@@ -15,6 +15,12 @@ class RecordingState: ObservableObject {
     @Published var systemVolume: Float = 1.0
     @Published var microphoneVolume: Float = 1.0
 
+    @Published var zoomSyncEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(zoomSyncEnabled, forKey: "zoomSyncEnabled")
+        }
+    }
+
     private var recordingTimer: Timer?
     private var recordingStartTime: Date?
 
@@ -27,6 +33,7 @@ class RecordingState: ObservableObject {
         try? FileManager.default.createDirectory(at: recordingsPath, withIntermediateDirectories: true)
 
         self.outputDirectory = recordingsPath
+        self.zoomSyncEnabled = UserDefaults.standard.bool(forKey: "zoomSyncEnabled")
     }
 
     func startRecordingTimer() {

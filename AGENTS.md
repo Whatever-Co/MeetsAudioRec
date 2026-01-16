@@ -107,6 +107,10 @@ scripts/
 - UI reads from `AudioCaptureManager` directly, not duplicated state
 - Volume/enable changes are live via `updateVolumes()` / `updateEnabledSources()`
 
+### Zoom Mute Status (test)
+- `ZoomMuteStatusMonitor` reads Zoom menu bar items via Accessibility (AXUIElement)
+- Requires Accessibility permission and currently checks English menu labels ("Mute Audio" / "Unmute Audio")
+
 ## Common Issues & Solutions
 
 ### Mic not working with USB devices

@@ -11,6 +11,7 @@
 		6C13B39F8AF3AA5ADA8D1D74 /* RecordingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6557CD547CE7C122A10C8AE1 /* RecordingState.swift */; };
 		6E9CD2A6C6C785A6D252FED6 /* MicrophoneCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7631BED9A313D5AEFC4A276E /* MicrophoneCapture.swift */; };
 		79C187F9BCA8B6307C4D66D9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 26A8E712800BF178D859602D /* Assets.xcassets */; };
+		7B0F5DB7DD0992287D38E206 /* ZoomMuteStatusMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F22847B414F3D515E11A3EC2 /* ZoomMuteStatusMonitor.swift */; };
 		BE4A383231F2E00DA1F767AD /* AudioMixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9E196F1402092A1D7283D7C /* AudioMixer.swift */; };
 		C0326B4746D931C00969615B /* MeetsAudioRecApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4892C6BB510CFE0C8E187FC0 /* MeetsAudioRecApp.swift */; };
 		C319B95E3E452D1A2EA68309 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A2412B74650EA5F3B2C868E /* ContentView.swift */; };
@@ -29,6 +30,7 @@
 		8908A5D2B031E78CFD7B76AB /* SystemAudioCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAudioCapture.swift; sourceTree = "<group>"; };
 		B9E196F1402092A1D7283D7C /* AudioMixer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMixer.swift; sourceTree = "<group>"; };
 		E1935C03177281AEAA40710A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		F22847B414F3D515E11A3EC2 /* ZoomMuteStatusMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomMuteStatusMonitor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -40,6 +42,7 @@
 				882F9D9642E33D4F5AB376DB /* MeetsAudioRec.entitlements */,
 				4892C6BB510CFE0C8E187FC0 /* MeetsAudioRecApp.swift */,
 				AA2A404BC99B848FCEC9387C /* Audio */,
+				E6737A156AA881ED2FB839B0 /* Integrations */,
 				34A8913968A1B6083232861F /* Models */,
 				40D645B60D01C2ECA9AEF48E /* Views */,
 			);
@@ -87,6 +90,14 @@
 				8908A5D2B031E78CFD7B76AB /* SystemAudioCapture.swift */,
 			);
 			path = Audio;
+			sourceTree = "<group>";
+		};
+		E6737A156AA881ED2FB839B0 /* Integrations */ = {
+			isa = PBXGroup;
+			children = (
+				F22847B414F3D515E11A3EC2 /* ZoomMuteStatusMonitor.swift */,
+			);
+			path = Integrations;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -190,6 +201,7 @@
 				6E9CD2A6C6C785A6D252FED6 /* MicrophoneCapture.swift in Sources */,
 				6C13B39F8AF3AA5ADA8D1D74 /* RecordingState.swift in Sources */,
 				4A1D99801C871B1924130123 /* SystemAudioCapture.swift in Sources */,
+				7B0F5DB7DD0992287D38E206 /* ZoomMuteStatusMonitor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
