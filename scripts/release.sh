@@ -74,11 +74,6 @@ gh release create "$TAG" "$DMG_PATH" \
 
 ### Changes
 - (Add release notes here)
-
-### Requirements
-- macOS 13.0 (Ventura) or later
-- Screen Recording permission
-- Microphone permission
 EOF
 )"
 
