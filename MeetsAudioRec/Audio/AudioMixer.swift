@@ -27,6 +27,7 @@ class AudioMixer {
 
     private var isRecording = false
     private var writeTimer: DispatchSourceTimer?
+    private var finalOutputURL: URL?
 
     init() {
         // Processing format: 48kHz, stereo, float32
@@ -47,6 +48,9 @@ class AudioMixer {
     }
 
     func startRecording(to url: URL) throws {
+        finalOutputURL = url
+        let tempURL = url.appendingPathExtension("recording")
+
         let settings: [String: Any] = [
             AVFormatIDKey: kAudioFormatMPEG4AAC,
             AVSampleRateKey: 48000,
@@ -56,7 +60,7 @@ class AudioMixer {
         ]
 
         audioFile = try AVAudioFile(
-            forWriting: url,
+            forWriting: tempURL,
             settings: settings,
             commonFormat: .pcmFormatFloat32,
             interleaved: false
@@ -85,6 +89,18 @@ class AudioMixer {
         }
 
         audioFile = nil
+
+        // Rename temp file to final output
+        if let finalURL = finalOutputURL {
+            let tempURL = finalURL.appendingPathExtension("recording")
+            do {
+                try FileManager.default.moveItem(at: tempURL, to: finalURL)
+            } catch {
+                logger.error("Failed to rename recording file: \(error.localizedDescription)")
+            }
+        }
+        finalOutputURL = nil
+
         systemRingBuffer.reset()
         micRingBuffer.reset()
     }
