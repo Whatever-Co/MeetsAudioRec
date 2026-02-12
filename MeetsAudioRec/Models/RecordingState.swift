@@ -55,9 +55,22 @@ class RecordingState: ObservableObject {
     }
 
     func generateRecordingFilename() -> URL {
+        return generateRecordingFilename(eventTitle: nil)
+    }
+
+    func generateRecordingFilename(eventTitle: String?) -> URL {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
         let timestamp = formatter.string(from: Date())
+
+        if let title = eventTitle {
+            let sanitized = title
+                .components(separatedBy: CharacterSet.alphanumerics.union(.whitespaces).inverted)
+                .joined()
+                .replacingOccurrences(of: " ", with: "_")
+                .prefix(60)
+            return outputDirectory.appendingPathComponent("\(sanitized)_\(timestamp).m4a")
+        }
         return outputDirectory.appendingPathComponent("Recording_\(timestamp).m4a")
     }
 }

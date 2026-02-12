@@ -3,7 +3,8 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var recordingState: RecordingState
     @EnvironmentObject var audioCaptureManager: AudioCaptureManager
-@EnvironmentObject var zoomMuteMonitor: ZoomMuteStatusMonitor
+    @EnvironmentObject var zoomMuteMonitor: ZoomMuteStatusMonitor
+    @EnvironmentObject var calendarManager: GoogleCalendarManager
 
     @State private var showingError = false
 
@@ -325,6 +326,8 @@ struct ContentView: View {
 
 zoomMuteStatusView
 
+calendarAutoRecordView
+
             // Output Directory Group
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -463,6 +466,136 @@ private var zoomStatusColor: Color {
   }
 }
 
+// MARK: - Calendar Auto-Record View
+
+private var calendarAutoRecordView: some View {
+  VStack(alignment: .leading, spacing: 8) {
+    HStack {
+      Image(systemName: "calendar")
+        .foregroundColor(.green)
+        .frame(width: 20)
+      Text("Calendar Auto-Record")
+        .font(.headline)
+      Spacer()
+      Toggle(isOn: $calendarManager.autoRecordEnabled) {
+        Text("")
+      }
+      .toggleStyle(.switch)
+      .onChange(of: calendarManager.autoRecordEnabled) { newValue in
+        if newValue && calendarManager.isSignedIn {
+          calendarManager.startPolling()
+        } else if !newValue {
+          calendarManager.stopPolling()
+        }
+      }
+      .help(calendarManager.autoRecordEnabled ? "Auto-record meetings from Google Calendar" : "Auto-record disabled")
+    }
+
+    if !calendarManager.isConfigured {
+      Text("Set Google OAuth credentials in GoogleCalendarManager.swift to enable this feature.")
+        .font(.caption)
+        .foregroundColor(.secondary)
+    } else if !calendarManager.isSignedIn {
+      Button(action: { calendarManager.signIn() }) {
+        Label("Sign in with Google", systemImage: "person.crop.circle.badge.plus")
+          .frame(maxWidth: .infinity)
+      }
+      .buttonStyle(.bordered)
+
+      if let status = calendarManager.statusMessage {
+        Text(status)
+          .font(.caption)
+          .foregroundColor(.orange)
+      }
+    } else {
+      // Signed in state
+      HStack {
+        if let email = calendarManager.userEmail {
+          Text(email)
+            .font(.caption)
+            .foregroundColor(.secondary)
+        }
+        Spacer()
+        Button("Sign Out") {
+          calendarManager.signOut()
+        }
+        .font(.caption)
+        .buttonStyle(.plain)
+        .foregroundColor(.red)
+      }
+
+      if calendarManager.autoRecordEnabled {
+        if calendarManager.isAutoRecording, let event = calendarManager.currentEvent {
+          HStack(spacing: 4) {
+            Circle()
+              .fill(Color.red)
+              .frame(width: 8, height: 8)
+            Text("Recording: \(event.title)")
+              .font(.caption)
+              .foregroundColor(.red)
+              .lineLimit(1)
+          }
+        } else if let next = calendarManager.nextMeeting {
+          HStack(spacing: 4) {
+            Circle()
+              .fill(Color.green)
+              .frame(width: 8, height: 8)
+            Text("Next: \(next.title)")
+              .font(.caption)
+              .foregroundColor(.secondary)
+              .lineLimit(1)
+            Spacer()
+            Text(formatEventTime(next.startTime))
+              .font(.system(.caption, design: .monospaced))
+              .foregroundColor(.secondary)
+          }
+        } else if calendarManager.upcomingMeetings.isEmpty {
+          Text("No upcoming meetings with video links")
+            .font(.caption)
+            .foregroundColor(.secondary)
+        }
+
+        // Show upcoming meetings list (max 3)
+        if calendarManager.upcomingMeetings.count > 0 {
+          ForEach(Array(calendarManager.upcomingMeetings.prefix(3))) { event in
+            HStack {
+              Image(systemName: event.meetingType == .googleMeet ? "video.fill" : "video.circle.fill")
+                .font(.caption)
+                .foregroundColor(event.meetingType == .googleMeet ? .green : .blue)
+                .frame(width: 16)
+              Text(event.title)
+                .font(.caption)
+                .lineLimit(1)
+              Spacer()
+              Text(formatEventTime(event.startTime))
+                .font(.system(.caption2, design: .monospaced))
+                .foregroundColor(.secondary)
+            }
+          }
+        }
+      }
+    }
+  }
+  .padding(12)
+  .background(Color.gray.opacity(0.05))
+  .cornerRadius(8)
+  .padding(.horizontal, 20)
+}
+
+private func formatEventTime(_ date: Date) -> String {
+  let now = Date()
+  let diff = date.timeIntervalSince(now)
+  if diff < 0 {
+    return "now"
+  } else if diff < 3600 {
+    return "\(Int(diff / 60))m"
+  } else {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "HH:mm"
+    return formatter.string(from: date)
+  }
+}
+
 private var effectiveMicEnabled: Bool {
   if recordingState.zoomSyncEnabled && zoomMuteMonitor.status == .muted {
     return false
@@ -523,10 +656,12 @@ private func openAccessibilitySettings() {
             }
         }
 
-        audioCaptureManager.onRecordingStopped = { [weak recordingState, weak zoomMuteMonitor] url in
+        audioCaptureManager.onRecordingStopped = { [weak recordingState, weak zoomMuteMonitor, weak calendarManager] url in
             recordingState?.stopRecordingTimer()
             // Stop Zoom sync monitoring
             zoomMuteMonitor?.stopMonitoring()
+            // Reset auto-record state if recording was manually stopped
+            calendarManager?.recordingWasManuallyStopped()
             if let url = url {
                 NSWorkspace.shared.selectFile(url.path, inFileViewerRootedAtPath: "")
             }
