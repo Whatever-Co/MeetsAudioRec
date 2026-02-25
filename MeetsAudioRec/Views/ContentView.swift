@@ -193,6 +193,12 @@ struct ContentView: View {
                 Text("MeetsAudioRec")
                     .font(.headline)
 
+                if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
+                    Text("v\(version)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
                 Spacer()
 
                 if audioCaptureManager.isRecording {
