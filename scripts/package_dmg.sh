@@ -6,7 +6,7 @@ BUILD_DIR="${ROOT_DIR}/build"
 DERIVED_DATA_DIR="${BUILD_DIR}/DerivedData"
 
 APP_NAME="MeetsAudioRec"
-VOL_NAME="Meets Audio Rec"
+VOL_NAME="MeetsAudioRec"
 DMG_NAME="MeetsAudioRec"
 
 DMG_ROOT="${BUILD_DIR}/dmg-root"
@@ -28,12 +28,17 @@ ln -s /Applications "${DMG_ROOT}/Applications"
 
 echo "=== Creating DMG ==="
 rm -f "${OUT_DMG}"
-hdiutil create \
-  -volname "${VOL_NAME}" \
-  -srcfolder "${DMG_ROOT}" \
-  -ov \
-  -format UDZO \
-  "${OUT_DMG}"
+# Use writable image + convert approach to avoid hdiutil -srcfolder issues
+# with signed app bundles containing embedded frameworks
+TEMP_DMG="${BUILD_DIR}/MeetsAudioRec_temp.dmg"
+rm -f "${TEMP_DMG}"
+hdiutil create -size 200m -fs HFS+ -volname "${VOL_NAME}" "${TEMP_DMG}"
+hdiutil attach "${TEMP_DMG}" -noverify -mountpoint "/Volumes/${VOL_NAME}"
+cp -R "${DMG_ROOT}/${APP_NAME}.app" "/Volumes/${VOL_NAME}/"
+ln -s /Applications "/Volumes/${VOL_NAME}/Applications"
+hdiutil detach "/Volumes/${VOL_NAME}"
+hdiutil convert "${TEMP_DMG}" -format UDZO -o "${OUT_DMG}"
+rm -f "${TEMP_DMG}"
 
 echo "=== Notarizing DMG ==="
 DEVELOPER_ID="Developer ID Application: Whatever Co. (G5G54TCH8W)"

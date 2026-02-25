@@ -19,14 +19,31 @@ ZIP_PATH="${WORK_DIR}/${APP_NAME}.zip"
 
 echo "=== Signing $APP_NAME.app ==="
 
-# Sign all nested frameworks and libraries first
-find "$APP_PATH" -type f -name "*.dylib" -o -name "*.framework" | while read -r item; do
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ENTITLEMENTS_PATH="${SCRIPT_DIR}/../MeetsAudioRec/MeetsAudioRec.entitlements"
+
+# Sign all nested components from inside out
+# 1. Sign XPC services
+find "$APP_PATH" -name "*.xpc" -type d | while read -r xpc; do
+  codesign --force --options runtime --timestamp --sign "$DEVELOPER_ID" "$xpc"
+done
+
+# 2. Sign nested apps (e.g., Sparkle's Updater.app)
+find "$APP_PATH/Contents/Frameworks" -name "*.app" -type d | while read -r nested_app; do
+  codesign --force --options runtime --timestamp --sign "$DEVELOPER_ID" "$nested_app"
+done
+
+# 3. Sign standalone executables and dylibs inside frameworks
+find "$APP_PATH/Contents/Frameworks" -type f \( -perm +111 -o -name "*.dylib" \) ! -name "*.plist" ! -name "*.h" ! -name "*.modulemap" ! -name "*.tbd" | while read -r item; do
   codesign --force --options runtime --timestamp --sign "$DEVELOPER_ID" "$item" 2>/dev/null || true
 done
 
-# Sign the main app bundle with entitlements
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ENTITLEMENTS_PATH="${SCRIPT_DIR}/../MeetsAudioRec/MeetsAudioRec.entitlements"
+# 4. Sign frameworks themselves
+find "$APP_PATH" -name "*.framework" -type d | while read -r fw; do
+  codesign --force --options runtime --timestamp --sign "$DEVELOPER_ID" "$fw"
+done
+
+# 5. Sign the main app bundle with entitlements
 codesign --force --options runtime --timestamp --entitlements "$ENTITLEMENTS_PATH" --sign "$DEVELOPER_ID" "$APP_PATH"
 
 # Verify signature

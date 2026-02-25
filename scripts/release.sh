@@ -43,12 +43,16 @@ xcodegen generate
 echo "=== Building and packaging DMG ==="
 "${ROOT_DIR}/scripts/package_dmg.sh"
 
-DMG_PATH="${BUILD_DIR}/MeetsAudioRec.dmg"
+DMG_ORIG="${BUILD_DIR}/MeetsAudioRec.dmg"
+DMG_PATH="${BUILD_DIR}/MeetsAudioRec-${VERSION}.dmg"
 
-if [[ ! -f "$DMG_PATH" ]]; then
-  echo "Error: DMG not found at $DMG_PATH"
+if [[ ! -f "$DMG_ORIG" ]]; then
+  echo "Error: DMG not found at $DMG_ORIG"
   exit 1
 fi
+
+# Rename to versioned filename for GitHub Release / Sparkle
+cp "$DMG_ORIG" "$DMG_PATH"
 
 echo "=== Creating commit and tag ==="
 jj describe -m "Release ${VERSION}
@@ -76,6 +80,9 @@ gh release create "$TAG" "$DMG_PATH" \
 - (Add release notes here)
 EOF
 )"
+
+echo "=== Updating Sparkle appcast ==="
+"${ROOT_DIR}/scripts/update_appcast.sh" "$VERSION"
 
 echo "=== Release complete ==="
 echo "Version: ${VERSION}"

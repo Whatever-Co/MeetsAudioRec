@@ -6,10 +6,15 @@ options:
   xcodeVersion: "15.0"
   generateEmptyDirectories: true
 
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.9.0
+
 settings:
   base:
-    MARKETING_VERSION: "1.1.1"
-    CURRENT_PROJECT_VERSION: "7"
+    MARKETING_VERSION: "1.2.0"
+    CURRENT_PROJECT_VERSION: "8"
     SWIFT_VERSION: "5.9"
     MACOSX_DEPLOYMENT_TARGET: "13.0"
 
@@ -37,6 +42,9 @@ targets:
             --platform macosx \
             --output-partial-info-plist "${TEMP_DIR}/actool_icon.plist"
         basedOnDependencyAnalysis: false
+    dependencies:
+      - package: Sparkle
+        product: Sparkle
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: co.whatever.MeetsAudioRec

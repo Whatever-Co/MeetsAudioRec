@@ -10,8 +10,10 @@
 		4A1D99801C871B1924130123 /* SystemAudioCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8908A5D2B031E78CFD7B76AB /* SystemAudioCapture.swift */; };
 		6C13B39F8AF3AA5ADA8D1D74 /* RecordingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6557CD547CE7C122A10C8AE1 /* RecordingState.swift */; };
 		6E9CD2A6C6C785A6D252FED6 /* MicrophoneCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7631BED9A313D5AEFC4A276E /* MicrophoneCapture.swift */; };
+		797C98D6425F2460FBB4A49A /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 11FE54298BF3B7A5089069CA /* Sparkle */; };
 		79C187F9BCA8B6307C4D66D9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 26A8E712800BF178D859602D /* Assets.xcassets */; };
 		7B0F5DB7DD0992287D38E206 /* ZoomMuteStatusMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F22847B414F3D515E11A3EC2 /* ZoomMuteStatusMonitor.swift */; };
+		B7EDD44E5DF844899E20002C /* CheckForUpdatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12922F201FEC1330C83B154 /* CheckForUpdatesView.swift */; };
 		BE4A383231F2E00DA1F767AD /* AudioMixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9E196F1402092A1D7283D7C /* AudioMixer.swift */; };
 		C0326B4746D931C00969615B /* MeetsAudioRecApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4892C6BB510CFE0C8E187FC0 /* MeetsAudioRecApp.swift */; };
 		C319B95E3E452D1A2EA68309 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A2412B74650EA5F3B2C868E /* ContentView.swift */; };
@@ -29,9 +31,21 @@
 		882F9D9642E33D4F5AB376DB /* MeetsAudioRec.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MeetsAudioRec.entitlements; sourceTree = "<group>"; };
 		8908A5D2B031E78CFD7B76AB /* SystemAudioCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAudioCapture.swift; sourceTree = "<group>"; };
 		B9E196F1402092A1D7283D7C /* AudioMixer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMixer.swift; sourceTree = "<group>"; };
+		E12922F201FEC1330C83B154 /* CheckForUpdatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckForUpdatesView.swift; sourceTree = "<group>"; };
 		E1935C03177281AEAA40710A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		F22847B414F3D515E11A3EC2 /* ZoomMuteStatusMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomMuteStatusMonitor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		528953490CAAF6BAC922239C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				797C98D6425F2460FBB4A49A /* Sparkle in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		13009ECBE1F8B3CD9DA2CB23 /* MeetsAudioRec */ = {
@@ -68,6 +82,7 @@
 		40D645B60D01C2ECA9AEF48E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				E12922F201FEC1330C83B154 /* CheckForUpdatesView.swift */,
 				7A2412B74650EA5F3B2C868E /* ContentView.swift */,
 			);
 			path = Views;
@@ -110,6 +125,7 @@
 				441780059C28B58E007A763A /* Sources */,
 				C028C8A678B55A9A3D35C10D /* Compile Icon with Liquid Glass */,
 				1F9CC92B3E3F42FBCFC160DC /* Resources */,
+				528953490CAAF6BAC922239C /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -117,6 +133,7 @@
 			);
 			name = MeetsAudioRec;
 			packageProductDependencies = (
+				11FE54298BF3B7A5089069CA /* Sparkle */,
 			);
 			productName = MeetsAudioRec;
 			productReference = 0514C6A3B47ED06CC4821E53 /* MeetsAudioRec.app */;
@@ -147,6 +164,9 @@
 			);
 			mainGroup = 6F4C8497318637C113225428;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				CC7FEBF294A9C4BA1C11C69E /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
@@ -196,6 +216,7 @@
 			files = (
 				E903D3C8720F13203F2C55EA /* AudioCaptureManager.swift in Sources */,
 				BE4A383231F2E00DA1F767AD /* AudioMixer.swift in Sources */,
+				B7EDD44E5DF844899E20002C /* CheckForUpdatesView.swift in Sources */,
 				C319B95E3E452D1A2EA68309 /* ContentView.swift in Sources */,
 				C0326B4746D931C00969615B /* MeetsAudioRecApp.swift in Sources */,
 				6E9CD2A6C6C785A6D252FED6 /* MicrophoneCapture.swift in Sources */,
@@ -242,7 +263,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -255,7 +276,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -320,7 +341,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -339,7 +360,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -393,6 +414,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CC7FEBF294A9C4BA1C11C69E /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		11FE54298BF3B7A5089069CA /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CC7FEBF294A9C4BA1C11C69E /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 13D8382A17BB88F2C7667AF3 /* Project object */;
 }

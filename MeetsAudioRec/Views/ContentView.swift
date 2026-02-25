@@ -317,6 +317,8 @@ struct ContentView: View {
                         Text(device.name).tag(device.id as String?)
                     }
                 }
+
+
             }
             .padding(12)
             .background(Color.gray.opacity(0.05))

@@ -28,5 +28,9 @@
     <string>MeetsAudioRec needs access to your microphone to record audio.</string>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
+    <key>SUFeedURL</key>
+    <string>https://whatever-co.github.io/MeetsAudioRec/appcast.xml</string>
+    <key>SUPublicEDKey</key>
+    <string>CfVhssjAg+ilpn08nLc2CvEID3s0PorWOS4lwUBfGto=</string>
 </dict>
 </plist>
